@@ -3,7 +3,8 @@
             [server.socket :as socket]
             [mire.player :as player]
             [mire.commands :as commands]
-            [mire.rooms :as rooms]))
+            [mire.rooms :as rooms]
+            [mire.generator :as generator]))
 
 (defn- cleanup []
   "Drop all inventory and remove player from room and player list."
@@ -48,8 +49,8 @@
 
 (defn -main
   ([port dir]
-     (rooms/add-rooms dir)
-     (defonce server (socket/create-server (Integer. port) mire-handle-client))
-     (println "Launching Mire server on port" port))
+   (rooms/add-rooms dir)
+   (defonce server (socket/create-server (Integer. port) mire-handle-client))
+   (println "Launching Mire server on port" port))
   ([port] (-main port "resources/rooms"))
   ([] (-main 3333)))
