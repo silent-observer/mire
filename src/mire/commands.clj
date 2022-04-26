@@ -23,7 +23,7 @@
   []
   (str (:desc @player/*current-room*) "(" (:id @player/*current-room*) ")"
        "\nExits: " (apply list (map
-                                (fn [[dir [_ k]]] [dir (if (empty? k) "open" "closed")]) 
+                                (fn [[dir [_ k]]] [dir (if (empty? @k) "open" "closed")]) 
                                 @(:exits @player/*current-room*))) "\n"
        (str/join "\n" (map #(str "There is " % " here.\n")
                            @(:items @player/*current-room*)))))
@@ -35,14 +35,14 @@
    (let [[target-name required-keys] ((:exits @player/*current-room*) (keyword direction))
          target (@rooms/rooms target-name)]
      (if target
-       (if (empty? required-keys)
+       (if (empty? @required-keys)
         (do
           (move-between-refs player/*name*
                              (:inhabitants @player/*current-room*)
                              (:inhabitants target))
           (ref-set player/*current-room* target)
           (look))
-        (str "The door is closed. To open it you need the following keys: " (apply list required-keys)))
+        (str "The door is closed. To open it you need the following keys: " (apply list @required-keys)))
        "You can't go that way."))))
 
 (defn grab
@@ -96,6 +96,26 @@
         (println player/prompt)))
     (str "You said " message)))
 
+(defn remove-one [thing coll]
+  (let [[n m] (split-with #(not= thing %) coll)] (concat n (rest m))))
+
+(defn use-key
+  "Use key on the door."
+  [thing door]
+  (dosync
+    (let [[target-name required-keys] ((:exits @player/*current-room*) (keyword door))]
+        (cond 
+         (not (player/is-key? thing)) (str thing " is not a key.")
+         (not (player/carrying? thing)) (str "You're not carrying a " thing ".")
+         (not target-name) "There's no door like that."
+         (not (some #{(keyword thing)} @required-keys)) 
+         (str "The " door " door doesn't need a " thing ".")
+         :else (do 
+                (alter player/*inventory* cm/cm-remove (keyword thing))
+                (alter (second (@(:exits @player/*current-room*) (keyword door)))
+                       #(remove-one (keyword thing) %))
+                (str "You used the " thing " on the " door " door."))))))
+
 (defn help
   "Show available commands and what they do."
   []
@@ -118,6 +138,7 @@
                "detect" detect
                "look" look
                "say" say
+               "use" use-key
                "help" help})
 
 ;; Command handling
