@@ -1,5 +1,6 @@
 (ns mire.rooms
-  (:require [mire.generator :as gen]))
+  (:require [mire.generator :as gen]
+            [mire.count-map :as cm]))
 
 (def rooms (ref {}))
 
@@ -18,7 +19,7 @@
         :name (:id room)
         :desc (:desc room)
         :exits (ref (into {} exits-with-keys))
-        :items (ref (:keys room))
+        :items (ref (cm/to-count-map (:keys room)))
         :inhabitants (ref #{})}))
          
        
@@ -50,4 +51,4 @@
 
 (defn room-contains?
   [room thing]
-  (@(:items room) (keyword thing)))
+  (cm/has? @(:items room) (keyword thing)))

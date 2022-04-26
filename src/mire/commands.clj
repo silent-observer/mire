@@ -1,13 +1,20 @@
 (ns mire.commands
   (:require [clojure.string :as str]
             [mire.rooms :as rooms]
-            [mire.player :as player]))
+            [mire.player :as player]
+            [mire.count-map :as cm]))
 
 (defn- move-between-refs
   "Move one instance of obj between from and to. Must call in a transaction."
   [obj from to]
   (alter from disj obj)
   (alter to conj obj))
+
+(defn- move-between-count-maps
+  "Move one instance of obj between two count-maps from and to. Must call in a transaction."
+  [obj from to]
+  (alter from cm/cm-remove obj)
+  (alter to cm/cm-add obj))
 
 ;; Command functions
 
@@ -39,10 +46,12 @@
   [thing]
   (dosync
    (if (rooms/room-contains? @player/*current-room* thing)
-     (do (move-between-refs (keyword thing)
+     (if (and (player/is-key? thing) (player/carrying-key?)) 
+      (str "You're already carrying a key")
+      (do (move-between-count-maps (keyword thing)
                             (:items @player/*current-room*)
                             player/*inventory*)
-         (str "You picked up the " thing "."))
+         (str "You picked up the " thing ".")))
      (str "There isn't any " thing " here."))))
 
 (defn discard
@@ -50,9 +59,9 @@
   [thing]
   (dosync
    (if (player/carrying? thing)
-     (do (move-between-refs (keyword thing)
-                            player/*inventory*
-                            (:items @player/*current-room*))
+     (do (move-between-count-maps (keyword thing)
+                                  player/*inventory*
+                                  (:items @player/*current-room*))
          (str "You dropped the " thing "."))
      (str "You're not carrying a " thing "."))))
 

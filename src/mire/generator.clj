@@ -65,6 +65,7 @@
          exits-data-full]))
 
 (def all-keys [:red-key :blue-key :green-key :white-key :black-key])
+(def all-keys-set (into #{} all-keys))
 
 (defn generate-keys [exits-data]
     (let [keys-counts (take (count exits-data) (repeatedly #(rand-irange 0 4)))
