@@ -35,12 +35,14 @@
    (let [[target-name required-keys] ((:exits @player/*current-room*) (keyword direction))
          target (@rooms/rooms target-name)]
      (if target
-       (do
-         (move-between-refs player/*name*
-                            (:inhabitants @player/*current-room*)
-                            (:inhabitants target))
-         (ref-set player/*current-room* target)
-         (look))
+       (if (empty? required-keys)
+        (do
+          (move-between-refs player/*name*
+                             (:inhabitants @player/*current-room*)
+                             (:inhabitants target))
+          (ref-set player/*current-room* target)
+          (look))
+        (str "The door is closed. To open it you need the following keys: " (apply list required-keys)))
        "You can't go that way."))))
 
 (defn grab
