@@ -92,8 +92,8 @@
     (doseq [inhabitant (disj @(:inhabitants @player/*current-room*)
                              player/*name*)]
       (binding [*out* (player/streams inhabitant)]
-        (println message)
-        (println player/prompt)))
+        (println player/*name* "says:" message)
+        (print player/prompt) (flush)))
     (str "You said " message)))
 
 (defn remove-one [thing coll]
