@@ -68,7 +68,7 @@
 (def all-keys-set (into #{} all-keys))
 
 (defn generate-keys [exits-data]
-    (let [keys-counts (take (count exits-data) (repeatedly #(rand-irange 0 4)))
+    (let [keys-counts (take (count exits-data) (repeatedly #(rand-irange 1 4)))
           needed-keys (map (fn [n] (take n (repeatedly #(rand-nth all-keys)))) keys-counts)]
      [(map conj exits-data needed-keys) (apply concat needed-keys)]))
 
