@@ -23,7 +23,7 @@
   []
   (str (:desc @player/*current-room*) "(" (:id @player/*current-room*) ")"
        "\nExits: " (apply list (map
-                                (fn [[dir [_ k]]] [dir (if (empty? @k) "open" "closed")]) 
+                                (fn [[dir [_ k _]]] [dir (if (empty? @k) "open" "closed")]) 
                                 @(:exits @player/*current-room*))) "\n"
        (str/join "\n" (map #(str "There is " % " here.\n")
                            @(:items @player/*current-room*)))))
@@ -32,7 +32,7 @@
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
   [direction]
   (dosync
-   (let [[target-name required-keys] ((:exits @player/*current-room*) (keyword direction))
+   (let [[target-name required-keys _] ((:exits @player/*current-room*) (keyword direction))
          target (@rooms/rooms target-name)]
      (if target
        (if (empty? @required-keys)
@@ -103,17 +103,24 @@
   "Use key on the door."
   [thing door]
   (dosync
-    (let [[target-name required-keys] ((:exits @player/*current-room*) (keyword door))]
+    (let [[target-name required-keys who-used] ((:exits @player/*current-room*) (keyword door))]
         (cond 
          (not (player/is-key? thing)) (str thing " is not a key.")
          (not (player/carrying? thing)) (str "You're not carrying a " thing ".")
          (not target-name) "There's no door like that."
+
          (not (some #{(keyword thing)} @required-keys)) 
          (str "The " door " door doesn't need a " thing ".")
+
+         (@who-used player/*name*)
+         "You cannot use more than one key on a single door, ask someone else to do it."
+
          :else (do 
                 (alter player/*inventory* cm/cm-remove (keyword thing))
                 (alter (second (@(:exits @player/*current-room*) (keyword door)))
                        #(remove-one (keyword thing) %))
+                (alter ((@(:exits @player/*current-room*) (keyword door)) 2)
+                       #(conj % player/*name*))
                 (str "You used the " thing " on the " door " door."))))))
 
 (defn help

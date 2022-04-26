@@ -10,8 +10,8 @@
         (mapcat (fn [[dir to]]
                  (reduce 
                   (fn [old k] (if (and (= (first k) dir))
-                                [[dir [to (ref (k 3))]]] old)) 
-                  [[dir [to (ref '())]]]
+                                [[dir [to (ref (k 3)) (ref #{})]]] old)) 
+                  [[dir [to (ref '()) (ref #{})]]]
                   relevant-keys)) (:exits room))]
        {:id (:id room)
         :name (:id room)
