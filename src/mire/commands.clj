@@ -30,7 +30,7 @@
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
   [direction]
   (dosync
-   (let [target-name ((:exits @player/*current-room*) (keyword direction))
+   (let [[target-name required-keys] ((:exits @player/*current-room*) (keyword direction))
          target (@rooms/rooms target-name)]
      (if target
        (do
