@@ -106,6 +106,8 @@
                "south" (fn [] (move :south)),
                "east" (fn [] (move :east)),
                "west" (fn [] (move :west)),
+               "up" (fn [] (move :up)),
+               "down" (fn [] (move :down)),
                "grab" grab
                "discard" discard
                "inventory" inventory
