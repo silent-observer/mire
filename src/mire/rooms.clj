@@ -5,16 +5,14 @@
 (def rooms (ref {}))
 
 (defn convert-room [room passage-keys]
-  (let [_ (println "room=" room)
-        relevant-keys (filter #(= (:id room) (get % 2)) passage-keys)
+  (let [relevant-keys (filter #(= (:id room) (get % 2)) passage-keys)
         exits-with-keys 
         (mapcat (fn [[dir to]]
                  (reduce 
                   (fn [old k] (if (and (= (first k) dir))
                                 [[dir [to (k 3)]]] old)) 
-                  '() 
-                  relevant-keys)) (:exits room))
-        _ (println "exits-with-keys=" exits-with-keys)]
+                  [[dir [to '()]]]
+                  relevant-keys)) (:exits room))]
        {:id (:id room)
         :name (:id room)
         :desc (:desc room)
