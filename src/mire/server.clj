@@ -1,6 +1,7 @@
 (ns mire.server
   (:require [clojure.java.io :as io]
             [server.socket :as socket]
+            [clojure.string :as string]
             [mire.player :as player]
             [mire.commands :as commands]
             [mire.rooms :as rooms]
@@ -42,7 +43,8 @@
 
       (try (loop [input (read-line)]
              (when input
-               (println (commands/execute input))
+               (when (not= "" (string/trim input))
+                (println (commands/execute input)))
                (.flush *err*)
                (print player/prompt) (flush)
                (recur (read-line))))
