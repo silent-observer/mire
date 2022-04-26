@@ -21,7 +21,7 @@
 (defn look
   "Get a description of the surrounding environs and its contents."
   []
-  (str (:desc @player/*current-room*)
+  (str (:desc @player/*current-room*) "(" (:id @player/*current-room*) ")"
        "\nExits: " (keys @(:exits @player/*current-room*)) "\n"
        (str/join "\n" (map #(str "There is " % " here.\n")
                            @(:items @player/*current-room*)))))
