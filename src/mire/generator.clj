@@ -123,5 +123,5 @@
     (let [values (take 5 (iterate 
                           (fn [[prev-layer new-layer exits-with-keys]] (generate-more new-layer)) 
                           [nil [start-room] nil]))]
-        [(concat (rest (map first values)) [[(second (last values))]])
-         (concat (rest (map #(% 2) values)) ((last values) 2))]))
+        [(apply concat (concat (rest (map first values)) [[(second (last values))]]))
+         (apply concat (concat (rest (map #(% 2) values)) ((last values) 2)))]))

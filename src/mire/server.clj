@@ -31,8 +31,9 @@
     ;; the one above so *in* and *out* will be bound to the socket
     (print "\nWhat is your name? ") (flush)
     (binding [player/*name* (get-unique-player-name (read-line))
-              player/*current-room* (ref (@rooms/rooms :start))
+              player/*current-room* (ref (@rooms/rooms 0))
               player/*inventory* (ref #{})]
+      (println "Current room" @player/*current-room*) (flush)
       (dosync
        (commute (:inhabitants @player/*current-room*) conj player/*name*)
        (commute player/streams assoc player/*name* *out*))
@@ -48,9 +49,8 @@
            (finally (cleanup))))))
 
 (defn -main
-  ([port dir]
-   (rooms/add-rooms dir)
+  ([port]
+   (rooms/add-rooms)
    (defonce server (socket/create-server (Integer. port) mire-handle-client))
    (println "Launching Mire server on port" port))
-  ([port] (-main port "resources/rooms"))
   ([] (-main 3333)))
