@@ -3,7 +3,12 @@
 (def room-descriptions ["Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6", "Test 7"])
 (def next-room-id (ref 0))
 
-(def start-room {:id 0 :desc "Start room" :exits {} :keys []})
+(def start-room {:id 0 
+                 :desc "Start room"
+                 :exits {}
+                 :keys []
+                 :chests []
+                 :notes []})
 (def two-rooms [{:id -1 :desc "Room 1" :exits {} :keys []} {:id -2 :desc "Room 2" :exits {} :keys []}])
 
 (defn rand-irange [a b] (+ a (rand-int (- b a))))
@@ -14,7 +19,9 @@
         {:id room-id
          :desc room-desc
          :exits {}
-         :keys []}))
+         :keys []
+         :chests []
+         :notes []}))
 
 (def all-exits #{:north :south :east :west :up :down})
 (defn reverse-direction [dir]
@@ -27,7 +34,7 @@
         :down :up))
 
 (defn add-exits [rooms exits]
-    (map (fn [room] 
+    (mapv (fn [room] 
              (let [relevant-exits 
                    (filter (fn [[dir to-id from-id]] (= (:id room) from-id)) exits)
                    exit-vect (mapcat (fn [[dir to-id from-id]] [dir to-id]) relevant-exits)]
@@ -99,10 +106,34 @@
           ;_ (println "passage-data=" passage-data)]
      (add-exits layer passage-data)))
 
+(defn add-chests [rooms note-list]
+  (let [room-count (count rooms)
+        chest-count (rand-irange (quot room-count 2) (quot (* room-count 3) 2))
+        chest-rooms-choice (take chest-count (repeatedly #(rand-int (count rooms))))]
+       (reduce (fn [l i] 
+                (let [chest-money (* 50 (rand-irange 3 11))
+                      chest-note-count (rand-irange 2 5)
+                      chest-notes (into #{} 
+                                   (take chest-note-count 
+                                    (repeatedly #(rand-nth note-list))))
+                      chest [chest-money chest-notes]]
+                     (assoc-in l [i :chests] 
+                                (conj (get-in l [i :chests]) chest))))
+        rooms chest-rooms-choice)))
+
+(defn add-notes [rooms note-list]
+  (let [room-count (count rooms)
+        note-count (count note-list)
+        note-rooms-choice (mapv vector
+                           (take note-count (repeatedly #(rand-int (count rooms)))) 
+                           note-list)]
+       (reduce (fn [l [i note]] (assoc-in l [i :notes] 
+                                          (conj (get-in l [i :notes]) note)))
+        rooms note-rooms-choice)))
+
 (defn generate-more [prev-layer]
     (let [old-room-count (count prev-layer)
           new-room-count (if (= old-room-count 1) 3 (rand-irange 2 6))
-          _ (println "new-room-count=" new-room-count)
           new-rooms (take new-room-count (repeatedly get-random-room))
           ;_ (println "new-rooms=" new-rooms)
           [old-with-passages new-with-passages exits-data-full] 
@@ -120,9 +151,22 @@
           
          [old-with-keys new-with-free-passages exits-with-keys]))
 
-(defn generate-full []
+(defn generate-all-layers []
     (let [values (take 5 (iterate 
                           (fn [[prev-layer new-layer exits-with-keys]] (generate-more new-layer)) 
                           [nil [start-room] nil]))]
-        [(apply concat (concat (rest (map first values)) [[(second (last values))]]))
+        [(apply concat (concat (rest (map first values)) [(second (last values))]))
          (apply concat (concat (rest (map #(% 2) values)) ((last values) 2)))]))
+
+(defn generate-note-list [n]
+  (into #{} (map #(format "%05d" %) (take n (repeatedly #(rand-irange 0 100000))))))
+
+(defn generate-full []
+  (let [[rooms passages] (generate-all-layers)
+        expected-note-count (* 2 (count rooms))
+        note-list (doall (into [] (generate-note-list expected-note-count)))
+        ;_ (println "rooms" rooms)
+        ;_ (println "note-list" note-list)
+        rooms-with-chests (add-chests (into [] rooms) note-list)
+        rooms-with-notes (add-notes (into [] rooms-with-chests) note-list)]
+    [rooms-with-notes passages]))
