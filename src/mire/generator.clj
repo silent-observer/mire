@@ -135,8 +135,8 @@
         two-room (rooms (- room-count 2))
         three-room (rooms (- room-count 3))
         one-room-exit (assoc one-room :exit-door 1)
-        two-room-exit (assoc one-room :exit-door 2)
-        three-room-exit (assoc one-room :exit-door 3)]
+        two-room-exit (assoc two-room :exit-door 2)
+        three-room-exit (assoc three-room :exit-door 3)]
        (concat (subvec rooms 0 (- room-count 3)) [three-room-exit two-room-exit one-room-exit])))
 
 (defn generate-more [prev-layer]
