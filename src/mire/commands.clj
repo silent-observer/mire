@@ -26,9 +26,11 @@
                                 (fn [[dir [_ k _]]] [dir (if (empty? @k) "open" "closed")]) 
                                 @(:exits @player/*current-room*))) 
        "\n\n"
-       (str/join (map #(str % " is in the room.\n")
-                  (disj @(:inhabitants @player/*current-room*) player/*name*))) 
-       "\n"
+       (if (= (count @(:inhabitants @player/*current-room*)) 1) ""
+        (str
+          (str/join (map #(str % " is in the room.\n")
+                      (disj @(:inhabitants @player/*current-room*) player/*name*))) 
+          "\n"))
        (str/join (map #(str "There is " % " here.\n")
                        @(:items @player/*current-room*)))))
 

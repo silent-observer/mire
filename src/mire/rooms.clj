@@ -19,8 +19,9 @@
         :exits (ref (into {} exits-with-keys))
         :items (ref (cm/to-count-map (:keys room)))
         :inhabitants (ref #{})
-        :chests (mapv (fn [[gold codes]] 
-                          [(ref :closed) gold codes]) (:chests room))
+        :chest (if (nil? (:chest room)) nil
+                (let [[gold codes] (:chest room)] 
+                  [(ref :closed) gold codes]))
         :notes (:notes room)}))
          
        

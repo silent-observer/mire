@@ -7,7 +7,7 @@
                  :desc "Start room"
                  :exits {}
                  :keys []
-                 :chests []
+                 :chest nil
                  :notes []})
 (def two-rooms [{:id -1 :desc "Room 1" :exits {} :keys []} {:id -2 :desc "Room 2" :exits {} :keys []}])
 
@@ -20,7 +20,7 @@
          :desc room-desc
          :exits {}
          :keys []
-         :chests []
+         :chest nil
          :notes []}))
 
 (def all-exits #{:north :south :east :west :up :down})
@@ -107,19 +107,15 @@
      (add-exits layer passage-data)))
 
 (defn add-chests [rooms note-list]
-  (let [room-count (count rooms)
-        chest-count (rand-irange (quot room-count 2) (quot (* room-count 3) 2))
-        chest-rooms-choice (take chest-count (repeatedly #(rand-int (count rooms))))]
-       (reduce (fn [l i] 
-                (let [chest-money (* 50 (rand-irange 3 11))
-                      chest-note-count (rand-irange 2 5)
-                      chest-notes (into #{} 
-                                   (take chest-note-count 
-                                    (repeatedly #(rand-nth note-list))))
-                      chest [chest-money chest-notes]]
-                     (assoc-in l [i :chests] 
-                                (conj (get-in l [i :chests]) chest))))
-        rooms chest-rooms-choice)))
+  (mapv (fn [r]
+         (if (< (rand) 0.3) r
+          (let [chest-money (* 50 (rand-irange 3 11))
+                 chest-note-count (rand-irange 2 5)
+                 chest-notes (into #{} 
+                              (take chest-note-count 
+                               (repeatedly #(rand-nth note-list))))
+                 chest [chest-money chest-notes]]
+               (assoc-in l [i :chest] chest))) rooms)))
 
 (defn add-notes [rooms note-list]
   (let [room-count (count rooms)
