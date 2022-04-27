@@ -3,6 +3,7 @@
 (def ^:dynamic *current-room*)
 (def ^:dynamic *inventory*)
 (def ^:dynamic *name*)
+(def ^:dynamic *gold*)
 
 (def prompt "> ")
 (def streams (ref {}))

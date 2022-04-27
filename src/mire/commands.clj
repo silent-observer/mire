@@ -87,7 +87,8 @@
   "See what you've got."
   []
   (str "You are carrying:\n"
-       (str/join "\n" (seq @player/*inventory*))))
+       (str/join "\n" (seq @player/*inventory*))
+       "\nYou also have " @player/*gold* " gold."))
 
 (defn detect
   "If you have the detector, you can see which room an item is in."
@@ -147,6 +148,23 @@
       (str "The notes contain following numbers: " 
         (:notes @player/*current-room*)))))
 
+(defn chest
+  "Try to open the chest."
+  [code]
+  (dosync
+    (let [[status gold codes] (:chest @player/*current-room*)]
+        (cond 
+         (nil? (:chest @player/*current-room*)) "There's no chest here."
+         (= @status :open) "The chest is already opened."
+        
+         (not (some #{(str code)} codes)) 
+         (str "The code didn't work. Maybe try another one?")
+        
+         :else (do 
+                (alter player/*gold* + gold)
+                (ref-set status :open)
+                (str "You opened the chest. There was " gold " gold there. You now have " @player/*gold* " gold."))))))
+
 (defn help
   "Show available commands and what they do."
   []
@@ -171,6 +189,7 @@
                "say" say
                "use" use-key
                "notes" notes
+               "chest" chest
                "help" help})
 
 ;; Command handling
