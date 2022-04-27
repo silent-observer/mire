@@ -32,7 +32,15 @@
                       (disj @(:inhabitants @player/*current-room*) player/*name*))) 
           "\n"))
        (str/join (map #(str "There is " % " here.\n")
-                       @(:items @player/*current-room*)))))
+                       @(:items @player/*current-room*)))
+       (if (nil? (:chest @player/*current-room*)) ""
+        (case @(first (:chest @player/*current-room*))
+          :closed "There is a closed chest here.\n"
+          :open "There is an empty chest here.\n"))
+       (if (empty? (:notes @player/*current-room*)) ""
+         (if (= (count (:notes @player/*current-room*)) 1)
+           "There is a note lying on the floor.\n"
+           "There are some notes lying on the floor.\n"))))
 
 (defn move
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
@@ -129,6 +137,16 @@
                        #(conj % player/*name*))
                 (str "You used the " thing " on the " door " door."))))))
 
+(defn notes
+  "Look at the notes."
+  []
+  (if (empty? (:notes @player/*current-room*)) "There are no notes."
+    (if (= (count (:notes @player/*current-room*)) 1)
+      (str "The note contains a following number: " 
+        (first (:notes @player/*current-room*)))
+      (str "The notes contain following numbers: " 
+        (:notes @player/*current-room*)))))
+
 (defn help
   "Show available commands and what they do."
   []
@@ -152,6 +170,7 @@
                "look" look
                "say" say
                "use" use-key
+               "notes" notes
                "help" help})
 
 ;; Command handling

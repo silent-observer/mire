@@ -115,7 +115,7 @@
                               (take chest-note-count 
                                (repeatedly #(rand-nth note-list))))
                  chest [chest-money chest-notes]]
-               (assoc-in l [i :chest] chest))) rooms)))
+               (assoc r :chest chest)))) rooms))
 
 (defn add-notes [rooms note-list]
   (let [room-count (count rooms)
