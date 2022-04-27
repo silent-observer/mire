@@ -18,7 +18,10 @@
         :desc (:desc room)
         :exits (ref (into {} exits-with-keys))
         :items (ref (cm/to-count-map (:keys room)))
-        :inhabitants (ref #{})}))
+        :inhabitants (ref #{})
+        :chests (mapv (fn [[gold codes]] 
+                          [(ref :closed) gold codes]) (:chests room))
+        :notes (:notes room)}))
          
        
 
