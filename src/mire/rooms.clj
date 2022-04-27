@@ -12,11 +12,16 @@
                   (fn [old k] (if (and (= (first k) dir))
                                 [[dir [to (ref (k 3)) (ref #{})]]] old)) 
                   [[dir [to (ref '()) (ref #{})]]]
-                  relevant-keys)) (:exits room))]
+                  relevant-keys)) (:exits room))
+        exits (if (not (:exit-door room)) exits-with-keys
+                   (conj exits-with-keys 
+                    [:exit [-1 
+                            (ref (repeat (:exit-door room) :star-key)) 
+                            (ref #{})]]))]
        {:id (:id room)
         :name (:id room)
         :desc (:desc room)
-        :exits (ref (into {} exits-with-keys))
+        :exits (ref (into {} exits))
         :items (ref (cm/to-count-map (:keys room)))
         :inhabitants (ref #{})
         :chest (if (nil? (:chest room)) nil

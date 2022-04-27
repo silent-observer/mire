@@ -72,7 +72,8 @@
          exits-data-full]))
 
 (def all-keys [:red-key :blue-key :green-key :white-key :black-key])
-(def all-keys-set (into #{} all-keys))
+(def all-keys-with-star (conj all-keys :star-key))
+(def all-keys-set (into #{} all-keys-with-star))
 
 (defn generate-keys [exits-data]
     (let [keys-counts (take (count exits-data) (repeatedly #(rand-irange 1 4)))
@@ -123,9 +124,20 @@
         note-rooms-choice (mapv vector
                            (take note-count (repeatedly #(rand-int (count rooms)))) 
                            note-list)]
-       (reduce (fn [l [i note]] (assoc-in l [i :notes] 
-                                          (conj (get-in l [i :notes]) note)))
+       (reduce (fn [l [i note]] 
+                (assoc-in l [i :notes] 
+                            (conj (get-in l [i :notes]) note)))
         rooms note-rooms-choice)))
+
+(defn add-exit-doors [rooms]
+  (let [room-count (count rooms)
+        one-room (rooms (- room-count 1))
+        two-room (rooms (- room-count 2))
+        three-room (rooms (- room-count 3))
+        one-room-exit (assoc one-room :exit-door 1)
+        two-room-exit (assoc one-room :exit-door 2)
+        three-room-exit (assoc one-room :exit-door 3)]
+       (concat (subvec rooms 0 (- room-count 3)) [three-room-exit two-room-exit one-room-exit])))
 
 (defn generate-more [prev-layer]
     (let [old-room-count (count prev-layer)
@@ -164,5 +176,8 @@
         ;_ (println "rooms" rooms)
         ;_ (println "note-list" note-list)
         rooms-with-chests (add-chests (into [] rooms) note-list)
-        rooms-with-notes (add-notes (into [] rooms-with-chests) note-list)]
-    [rooms-with-notes passages]))
+        rooms-with-notes (add-notes (into [] rooms-with-chests) note-list)
+        rooms-with-exits (add-exit-doors 
+                          (place-keys rooms-with-notes 
+                            (repeat 4 :star-key)))]
+    [rooms-with-exits passages]))
