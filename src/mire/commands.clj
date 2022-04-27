@@ -24,9 +24,13 @@
   (str (:desc @player/*current-room*) "(" (:id @player/*current-room*) ")"
        "\nExits: " (apply list (map
                                 (fn [[dir [_ k _]]] [dir (if (empty? @k) "open" "closed")]) 
-                                @(:exits @player/*current-room*))) "\n"
-       (str/join "\n" (map #(str "There is " % " here.\n")
-                           @(:items @player/*current-room*)))))
+                                @(:exits @player/*current-room*))) 
+       "\n\n"
+       (str/join (map #(str % " is in the room.\n")
+                  (disj @(:inhabitants @player/*current-room*) player/*name*))) 
+       "\n"
+       (str/join (map #(str "There is " % " here.\n")
+                       @(:items @player/*current-room*)))))
 
 (defn move
   "\"♬ We gotta get out of this place... ♪\" Give a direction."
