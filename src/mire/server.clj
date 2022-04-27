@@ -47,7 +47,8 @@
                 (println (commands/execute input)))
                (.flush *err*)
                (print player/prompt) (flush)
-               (recur (read-line))))
+               (when (not @rooms/game-over)
+                (recur (read-line)))))
            (finally (cleanup))))))
 
 (defn -main

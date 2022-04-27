@@ -50,14 +50,25 @@
          target (@rooms/rooms target-name)]
      (if (or target (= target-name -1))
        (if (empty? @required-keys)
-        (do
-          (move-between-refs player/*name*
-                             (:inhabitants @player/*current-room*)
-                             (:inhabitants target))
-          (ref-set player/*current-room* target)
-          (look))
+        (if target
+          (do
+            (move-between-refs player/*name*
+                              (:inhabitants @player/*current-room*)
+                              (:inhabitants target))
+            (ref-set player/*current-room* target)
+            (look))
+          (do
+            (doseq [inhabitant (disj (keys player/streams)
+                                player/*name*)]
+              (binding [*out* (player/streams inhabitant)]
+                (println player/*name* " has won!")
+                (print player/prompt) (flush)))
+            (ref-set rooms/game-over true)
+            "You won!"))
+            
+        
         (str "The door is closed. To open it you need the following keys: " (apply list @required-keys)))
-       "You can't go that way."))))
+      "You can't go that way."))))
 
 (defn grab
   "Pick something up."

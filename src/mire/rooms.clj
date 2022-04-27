@@ -3,6 +3,7 @@
             [mire.count-map :as cm]))
 
 (def rooms (ref {}))
+(def game-over (ref false))
 
 (defn convert-room [room passage-keys]
   (let [relevant-keys (filter #(= (:id room) (get % 2)) passage-keys)
