@@ -48,7 +48,7 @@
   (dosync
    (let [[target-name required-keys _] ((:exits @player/*current-room*) (keyword direction))
          target (@rooms/rooms target-name)]
-     (if target
+     (if (or target (= target-name -1))
        (if (empty? @required-keys)
         (do
           (move-between-refs player/*name*
@@ -181,6 +181,7 @@
                "west" (fn [] (move :west)),
                "up" (fn [] (move :up)),
                "down" (fn [] (move :down)),
+               "exit" (fn [] (move :exit)),
                "grab" grab
                "discard" discard
                "inventory" inventory
