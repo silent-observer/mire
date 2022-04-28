@@ -38,10 +38,14 @@
               player/*current-room* (ref (@rooms/rooms 0))
               player/*inventory* (ref {})
               player/*gold* (ref 0)
-              player/*exited* (ref false)]
+              player/*exited* (ref false)
+              player/*rob-cooldown* (ref 0)
+              player/*rob-data* (ref nil)
+              player/*rob-attempts-left* (ref 3)]
       (dosync
        (commute (:inhabitants @player/*current-room*) conj player/*name*)
-       (commute player/streams assoc player/*name* *out*))
+       (commute player/streams assoc player/*name* *out*)
+       (commute player/gold-vaults assoc player/*name* player/*gold*))
 
       (println (commands/look)) (print player/prompt) (flush)
 

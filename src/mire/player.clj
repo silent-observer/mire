@@ -5,9 +5,13 @@
 (def ^:dynamic *name*)
 (def ^:dynamic *gold*)
 (def ^:dynamic *exited*)
+(def ^:dynamic *rob-cooldown*)
+(def ^:dynamic *rob-data*)
+(def ^:dynamic *rob-attempts-left*)
 
 (def prompt "> ")
 (def streams (ref {}))
+(def gold-vaults (ref {}))
 
 (defn carrying? [thing]
   (cm/has? @*inventory* (keyword thing)))

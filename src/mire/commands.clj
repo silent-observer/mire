@@ -190,6 +190,58 @@
                 (ref-set status :open)
                 (str "You opened the chest. There was " gold " gold there. You now have " @player/*gold* " gold."))))))
 
+(defn rob
+  "Rob a player. Be careful not to get spotted!"
+  [& words]
+  (let [victim (str/join " " words)]
+    (cond 
+      (not (@(:inhabitants @player/*current-room*) victim)) "There is no such person here."
+      (= victim player/*name*) "You can't rob yourself."
+      (= @player/*rob-attempts-left* 0) "You have already failed 3 times, you can't rob anymore."
+      (< (System/currentTimeMillis) @player/*rob-cooldown*) "Not so fast! You can only rob once per 30 seconds"
+      :else (let [x (+ 1 (rand-int 4))] 
+              (dosync 
+                (ref-set player/*rob-cooldown* (+ (System/currentTimeMillis) 30000))
+                (ref-set player/*rob-data* [(str x) (+ (System/currentTimeMillis) 1000) victim])
+                (str "Quick! Type " x "!"))))))
+
+(defn rob-result [x]
+  (cond 
+    (nil? @player/*rob-data*) "You're not robbing anyone right now..."
+
+    (not= x (first @player/*rob-data*)) 
+    (dosync
+     (alter player/*rob-attempts-left* dec)
+     (binding [*out* (player/streams (@player/*rob-data* 2))]
+      (println player/*name* "tried to rob you!")
+      (print player/prompt) (flush)
+      (ref-set player/*rob-data* nil))
+     (if (= @player/*rob-attempts-left* 0)
+      "Wrong! They've noticed you. Now you can't rob anymore."
+      (str "Wrong! They've noticed you. Now you can only fail "
+        @player/*rob-attempts-left* " more times.")))
+
+    (> (System/currentTimeMillis) (second @player/*rob-data*))
+    (dosync
+     (alter player/*rob-attempts-left* dec)
+     (binding [*out* (player/streams (@player/*rob-data* 2))]
+      (println player/*name* "tried to rob you!")
+      (print player/prompt) (flush))
+     (ref-set player/*rob-data* nil)
+     (if (= @player/*rob-attempts-left* 0)
+      "You weren't fast enough! They've noticed you. Now you can't rob anymore."
+      (str "You weren't fast enough! They've noticed you. Now you can only fail "
+        @player/*rob-attempts-left* " more times.")))
+    
+    :else (let [victim-gold (@player/gold-vaults (@player/*rob-data* 2))
+                stolen (quot @victim-gold 4)]
+            (dosync 
+              (ref-set player/*rob-data* nil)
+              (alter player/*gold* + stolen)
+              (alter victim-gold - stolen)
+              (if (= stolen 0) "Unfortunately, they didn't have any gold..."
+                (str "You've stolen " stolen " gold! Now you have " @player/*gold* " gold."))))))
+
 (defn help
   "Show available commands and what they do."
   []
@@ -208,15 +260,16 @@
                "up" (fn [] (move :up)),
                "down" (fn [] (move :down)),
                "exit" (fn [] (move :exit)),
-               "grab" grab
-               "discard" discard
-               "inventory" inventory
-               "detect" detect
-               "look" look
-               "say" say
-               "use" use-key
-               "notes" notes
-               "chest" chest
+               "grab" grab,
+               "discard" discard,
+               "inventory" inventory,
+               "detect" detect,
+               "look" look,
+               "say" say,
+               "use" use-key,
+               "notes" notes,
+               "chest" chest,
+               "rob" rob,
                "help" help})
 
 ;; Command handling
@@ -226,7 +279,9 @@
   [input]
   (if @player/*exited* "You already left the dungeon, you can't do that!"
     (try (let [[command & args] (.split input " +")]
-          (apply (commands command) args))
+          (if (nil? @player/*rob-data*) 
+            (apply (commands command) args)
+            (rob-result command)))
         (catch Exception e
           (.printStackTrace e (new java.io.PrintWriter *err*))
           "You can't do that!"))))
