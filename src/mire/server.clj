@@ -23,6 +23,9 @@
         (recur (read-line)))
     name))
 
+(defn is-game-over? []
+  (and @rooms/game-over-time (> (System/currentTimeMillis) @rooms/game-over-time)))
+
 (defn- mire-handle-client [in out]
   (binding [*in* (io/reader in)
             *out* (io/writer out)
@@ -34,7 +37,8 @@
     (binding [player/*name* (get-unique-player-name (read-line))
               player/*current-room* (ref (@rooms/rooms 0))
               player/*inventory* (ref {})
-              player/*gold* (ref 0)]
+              player/*gold* (ref 0)
+              player/*exited* (ref false)]
       (dosync
        (commute (:inhabitants @player/*current-room*) conj player/*name*)
        (commute player/streams assoc player/*name* *out*))
@@ -47,7 +51,8 @@
                 (println (commands/execute input)))
                (.flush *err*)
                (print player/prompt) (flush)
-               (when (not @rooms/game-over)
+               (if (is-game-over?)
+                (println "Game is over!" @rooms/current-winner "won!")
                 (recur (read-line)))))
            (finally (cleanup))))))
 

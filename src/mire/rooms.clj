@@ -3,7 +3,9 @@
             [mire.count-map :as cm]))
 
 (def rooms (ref {}))
-(def game-over (ref false))
+(def game-over-time (ref nil))
+(def current-winner (ref nil))
+(def winner-gold (ref nil))
 
 (defn convert-room [room passage-keys]
   (let [relevant-keys (filter #(= (:id room) (get % 2)) passage-keys)

@@ -4,6 +4,7 @@
 (def ^:dynamic *inventory*)
 (def ^:dynamic *name*)
 (def ^:dynamic *gold*)
+(def ^:dynamic *exited*)
 
 (def prompt "> ")
 (def streams (ref {}))
