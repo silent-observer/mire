@@ -52,6 +52,16 @@
        (if (empty? @required-keys)
         (if target
           (do
+            (doseq [inhabitant (disj @(:inhabitants @player/*current-room*)
+                                player/*name*)]
+             (binding [*out* (player/streams inhabitant)]
+               (println player/*name* "exited the room.")
+               (print player/prompt) (flush)))
+            (doseq [inhabitant (disj @(:inhabitants target)
+                                player/*name*)]
+             (binding [*out* (player/streams inhabitant)]
+               (println player/*name* "entered the room.")
+               (print player/prompt) (flush)))
             (move-between-refs player/*name*
                               (:inhabitants @player/*current-room*)
                               (:inhabitants target))
@@ -59,6 +69,11 @@
             (look))
           (if (nil? @rooms/game-over-time)
             (do
+              (doseq [inhabitant (disj @(:inhabitants @player/*current-room*)
+                                  player/*name*)]
+               (binding [*out* (player/streams inhabitant)]
+                 (println player/*name* "exited the room.")
+                 (print player/prompt) (flush)))
               (doseq [inhabitant (disj (into #{} (keys @player/streams))
                                   player/*name*)]
                 (binding [*out* (player/streams inhabitant)]
