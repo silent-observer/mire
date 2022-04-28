@@ -1,6 +1,6 @@
 (ns mire.generator)
 
-(def room-descriptions ["Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6", "Test 7"])
+(def room-descriptions ["A room"])
 (def next-room-id (ref 0))
 
 (def start-room {:id 0 

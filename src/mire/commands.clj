@@ -21,7 +21,7 @@
 (defn look
   "Get a description of the surrounding environs and its contents."
   []
-  (str (:desc @player/*current-room*) "(" (:id @player/*current-room*) ")"
+  (str (:desc @player/*current-room*) ". There is a big number " (:id @player/*current-room*) " written on the wall."
        "\nExits: " (apply list (map
                                 (fn [[dir [_ k _]]] [dir (if (empty? @k) "open" "closed")]) 
                                 @(:exits @player/*current-room*))) 
