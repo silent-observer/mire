@@ -200,6 +200,7 @@
 ;; Command data
 
 (def commands {"move" move,
+               "go" go,
                "north" (fn [] (move :north)),
                "south" (fn [] (move :south)),
                "east" (fn [] (move :east)),
